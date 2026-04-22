@@ -1,10 +1,9 @@
-if [ -f "$HOME/.zsh_early.zsh" ]; then
+if [[ -f "$HOME/.zsh_early.zsh" ]]; then
     source "$HOME/.zsh_early.zsh"
 fi
 
-source "$HOME/.local/share/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+export LANG=en_US.UTF-8
 
-# other setup
 autoload -Uz compinit && compinit
 setopt autocd
 setopt promptsubst
@@ -17,9 +16,15 @@ if [[ "$(uname)" == "Darwin" ]]; then
   }
   zle -N copy-buffer-to-clipboard
   bindkey '^Xc' copy-buffer-to-clipboard
+
+  if [[ -f "/opt/homebrew/bin/brew" ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  fi
+
+  alias ding="(afplay /System/Library/Sounds/Glass.aiff &)"
+  alias rmq="xattr -d com.apple.quarantine"
 fi
 
-# History
 HISTSIZE=5000
 HISTFILE=~/.zsh_history
 SAVEHIST=$HISTSIZE
@@ -32,7 +37,6 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
-# Fancy colors!
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 # shellcheck disable=SC2296
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
@@ -46,13 +50,31 @@ ZSH_HIGHLIGHT_STYLES[path]='fg=magenta,underline'
 ZSH_HIGHLIGHT_STYLES[autodirectory]='fg=magenta,underline'
 ZSH_HIGHLIGHT_STYLES[reserved-word]='fg=#bc31c6'
 
-# Fancy prompt!
 PS1='%F{cyan}%n@%m %f%F{white}> %f'
 RPROMPT='${${PWD:A}/#${HOME}/~}'
 
-alias ls='ls --color'
 alias c='clear'
 alias reload='source ~/.zshrc'
+alias cz='chezmoi'
+
+if command -v eza > /dev/null; then
+    alias ls='eza --icons=auto --hyperlink --git'
+else
+    alias ls='ls --color'
+fi
+
+if command -v bat > /dev/null; then
+    export MANPAGER='bat -l man -p'
+fi
+
+if command -v micro > /dev/null; then
+	alias m='micro'
+    export EDITOR='micro'
+elif command -v nano > /dev/null; then
+    export EDITOR='nano'
+fi
+
+source "$HOME/.local/share/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
 if [ -f "$HOME/.zshrc.local" ]; then
     source "$HOME/.zshrc.local"
