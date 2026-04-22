@@ -1,0 +1,81 @@
+if [[ -f "$HOME/.zsh_early.zsh" ]]; then
+    source "$HOME/.zsh_early.zsh"
+fi
+
+export LANG=en_US.UTF-8
+
+autoload -Uz compinit && compinit
+setopt autocd
+setopt promptsubst
+bindkey ' ' magic-space
+
+{{ if eq .chezmoi.os "darwin" }}
+function copy-buffer-to-clipboard() {
+  echo -n "$BUFFER" | pbcopy
+  zle -M "buffer copied to clipboard"
+}
+zle -N copy-buffer-to-clipboard
+bindkey '^Xc' copy-buffer-to-clipboard
+
+if [[ -f "/opt/homebrew/bin/brew" ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+alias ding="(afplay /System/Library/Sounds/Glass.aiff &)"
+alias rmq="xattr -d com.apple.quarantine"
+{{ end }}
+
+HISTSIZE=5000
+HISTFILE=~/.zsh_history
+SAVEHIST=$HISTSIZE
+HISTDUP=erase
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_ignore_dups
+setopt hist_find_no_dups
+
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+# shellcheck disable=SC2296
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+
+typeset -A ZSH_HIGHLIGHT_STYLES
+
+ZSH_HIGHLIGHT_STYLES[single-hyphen-option]='fg=cyan'
+ZSH_HIGHLIGHT_STYLES[double-hyphen-option]='fg=cyan'
+ZSH_HIGHLIGHT_STYLES[path]='fg=magenta,underline'
+ZSH_HIGHLIGHT_STYLES[autodirectory]='fg=magenta,underline'
+ZSH_HIGHLIGHT_STYLES[reserved-word]='fg=#bc31c6'
+
+PS1='%F{cyan}%n@%m %f%F{white}> %f'
+RPROMPT='${${PWD:A}/#${HOME}/~}'
+
+alias c='clear'
+alias reload='source ~/.zshrc'
+alias cz='chezmoi'
+
+if command -v eza > /dev/null; then
+    alias ls='eza --icons=auto --hyperlink --git'
+else
+    alias ls='ls --color'
+fi
+
+if command -v bat > /dev/null; then
+    export MANPAGER='bat -l man -p'
+fi
+
+if command -v micro > /dev/null; then
+	alias m='micro'
+    export EDITOR='micro'
+elif command -v nano > /dev/null; then
+    export EDITOR='nano'
+fi
+
+source "$HOME/.local/share/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+
+if [ -f "$HOME/.zshrc.local" ]; then
+    source "$HOME/.zshrc.local"
+fi
