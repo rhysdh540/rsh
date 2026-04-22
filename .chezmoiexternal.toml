@@ -1,0 +1,4 @@
+[".local/share/fast-syntax-highlighting"]
+    type = "git-repo"
+    url = "https://github.com/zdharma-continuum/fast-syntax-highlighting.git"
+    refreshPeriod = "168h"

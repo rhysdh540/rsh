@@ -1,0 +1,59 @@
+if [ -f "$HOME/.zsh_early.zsh" ]; then
+    source "$HOME/.zsh_early.zsh"
+fi
+
+source "$HOME/.local/share/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+
+# other setup
+autoload -Uz compinit && compinit
+setopt autocd
+setopt promptsubst
+bindkey ' ' magic-space
+
+if [[ "$(uname)" == "Darwin" ]]; then
+  function copy-buffer-to-clipboard() {
+    echo -n "$BUFFER" | pbcopy
+    zle -M "buffer copied to clipboard"
+  }
+  zle -N copy-buffer-to-clipboard
+  bindkey '^Xc' copy-buffer-to-clipboard
+fi
+
+# History
+HISTSIZE=5000
+HISTFILE=~/.zsh_history
+SAVEHIST=$HISTSIZE
+HISTDUP=erase
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_ignore_dups
+setopt hist_find_no_dups
+
+# Fancy colors!
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+# shellcheck disable=SC2296
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+
+typeset -A ZSH_HIGHLIGHT_STYLES
+
+ZSH_HIGHLIGHT_STYLES[single-hyphen-option]='fg=cyan'
+ZSH_HIGHLIGHT_STYLES[double-hyphen-option]='fg=cyan'
+ZSH_HIGHLIGHT_STYLES[path]='fg=magenta,underline'
+ZSH_HIGHLIGHT_STYLES[autodirectory]='fg=magenta,underline'
+ZSH_HIGHLIGHT_STYLES[reserved-word]='fg=#bc31c6'
+
+# Fancy prompt!
+PS1='%F{cyan}%n@%m %f%F{white}> %f'
+RPROMPT='${${PWD:A}/#${HOME}/~}'
+
+alias ls='ls --color'
+alias c='clear'
+alias reload='source ~/.zshrc'
+
+if [ -f "$HOME/.zshrc.local" ]; then
+    source "$HOME/.zshrc.local"
+fi
