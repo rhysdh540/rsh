@@ -4,6 +4,7 @@ fi
 
 export LANG=en_US.UTF-8
 
+autoload -Uz vcs_info
 autoload -Uz compinit && compinit
 setopt autocd
 setopt promptsubst
@@ -50,8 +51,20 @@ ZSH_HIGHLIGHT_STYLES[path]='fg=magenta,underline'
 ZSH_HIGHLIGHT_STYLES[autodirectory]='fg=magenta,underline'
 ZSH_HIGHLIGHT_STYLES[reserved-word]='fg=#bc31c6'
 
-PS1='%F{cyan}%n@%m %f%F{white}> %f'
-RPROMPT='${${PWD:A}/#${HOME}/~}'
+precmd() {
+    local e=$?
+    vcs_info
+    if (( e == 0 )); then
+        _prompt_tail='%F{white}'
+    elif (( e == 1 )); then
+        _prompt_tail='%F{red}'
+    else
+        _prompt_tail="%F{red}[${e}]"
+    fi
+}
+zstyle ':vcs_info:git:*' formats '%F{yellow}(%b)%f'
+PS1='%F{cyan}%n@%m%f ${_prompt_tail}>%f '
+RPROMPT='${${PWD:A}/#${HOME}/~} ${vcs_info_msg_0_}'
 
 alias c='clear'
 alias reload='source ~/.zshrc'
@@ -59,6 +72,7 @@ alias cz='chezmoi'
 
 if command -v eza > /dev/null; then
     alias ls='eza --icons=auto --hyperlink --git'
+    alias tree='ls --tree'
 else
     alias ls='ls --color'
 fi
@@ -75,6 +89,9 @@ elif command -v nano > /dev/null; then
 fi
 
 source "$HOME/.local/share/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+source "$HOME/.local/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+source "$HOME/.local/share/fzf/shell/key-bindings.zsh"
+source "$HOME/.local/share/fzf/shell/completion.zsh"
 
 if [ -f "$HOME/.zshrc.local" ]; then
     source "$HOME/.zshrc.local"
