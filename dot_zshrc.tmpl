@@ -10,6 +10,10 @@ setopt autocd
 setopt promptsubst
 bindkey ' ' magic-space
 
+if command -v carapace > /dev/null; then
+    source <(carapace _carapace zsh)
+fi
+
 {{ if eq .chezmoi.os "darwin" }}
 function copy-buffer-to-clipboard() {
   echo -n "$BUFFER" | pbcopy
@@ -41,7 +45,9 @@ setopt hist_find_no_dups
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 # shellcheck disable=SC2296
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-zstyle ':completion:*' menu no
+
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --tree --icons=auto --level=2 $realpath 2>/dev/null'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --tree --icons=auto --level=2 $realpath 2>/dev/null'
 
 typeset -A ZSH_HIGHLIGHT_STYLES
 
@@ -88,10 +94,21 @@ elif command -v nano > /dev/null; then
     export EDITOR='nano'
 fi
 
+if command -v yazi > /dev/null; then
+    function y() {
+            local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+            command yazi "$@" --cwd-file="$tmp"
+            IFS= read -r -d '' cwd < "$tmp"
+            [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
+            rm -f -- "$tmp"
+    }
+fi
+
 source "$HOME/.local/share/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 source "$HOME/.local/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 source "$HOME/.local/share/fzf/shell/key-bindings.zsh"
 source "$HOME/.local/share/fzf/shell/completion.zsh"
+source "$HOME/.local/share/zsh-fzf-tab/fzf-tab.plugin.zsh"
 
 if [ -f "$HOME/.zshrc.local" ]; then
     source "$HOME/.zshrc.local"
