@@ -4,14 +4,30 @@ fi
 
 export LANG=en_US.UTF-8
 
+setopt auto_param_slash
+setopt no_case_glob no_case_match
+setopt glob_dots extended_glob
+setopt interactive_comments
+
 autoload -Uz vcs_info
-autoload -Uz compinit && compinit
+autoload -Uz compinit
+if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
+    compinit
+else
+    compinit -C
+fi
 setopt autocd
 setopt promptsubst
 bindkey ' ' magic-space
 
 if command -v carapace > /dev/null; then
-    source <(carapace _carapace zsh)
+    _carapace_cache="${XDG_CACHE_HOME:-$HOME/.cache}/carapace/init.zsh"
+    if [[ ! -f "$_carapace_cache" || "$commands[carapace]" -nt "$_carapace_cache" ]]; then
+        mkdir -p "${_carapace_cache:h}"
+        carapace _carapace zsh >| "$_carapace_cache"
+    fi
+    source "$_carapace_cache"
+    unset _carapace_cache
 fi
 
 {{ if eq .chezmoi.os "darwin" }}
@@ -106,8 +122,7 @@ fi
 
 source "$HOME/.local/share/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 source "$HOME/.local/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-source "$HOME/.local/share/fzf/shell/key-bindings.zsh"
-source "$HOME/.local/share/fzf/shell/completion.zsh"
+source <(fzf --zsh)
 source "$HOME/.local/share/zsh-fzf-tab/fzf-tab.plugin.zsh"
 
 if [ -f "$HOME/.zshrc.local" ]; then
