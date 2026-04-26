@@ -122,8 +122,11 @@ fi
 
 source "$HOME/.local/share/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 source "$HOME/.local/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-source <(fzf --zsh)
-source "$HOME/.local/share/zsh-fzf-tab/fzf-tab.plugin.zsh"
+
+if command -v fzf > /dev/null; then
+	source <(fzf --zsh)
+	source "$HOME/.local/share/zsh-fzf-tab/fzf-tab.plugin.zsh"
+fi
 
 if [ -f "$HOME/.zshrc.local" ]; then
     source "$HOME/.zshrc.local"
